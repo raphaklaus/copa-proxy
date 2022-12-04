@@ -1,0 +1,52 @@
+---
+- hosts: server
+  tasks:
+    - name: Install git and gpg
+      become: true
+      apt:
+        pkg:
+          - git
+          - gpg
+    - name: Checkout ASDF
+      git:
+        repo: 'https://github.com/asdf-vm/asdf.git'
+        dest: ~/.asdf/
+        version: v0.10.2
+    - name: Install ASDF
+      shell: | 
+        echo ". $HOME/.asdf/asdf.sh" >> ~/.bashrc
+        echo ". $HOME/.asdf/completions/asdf.bash" >> ~/.bashrc
+      args:
+       executable: /bin/bash
+    - name: Install ASDF NodeJS
+      shell: |  
+        bash -ilc "asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git"
+        bash -ilc "asdf install nodejs 18.12.1"
+        bash -ilc "asdf global nodejs 18.12.1"
+    - name: Install pm2
+      shell: |
+        bash -ilc "npm install pm2 -g"
+      args:
+       executable: /bin/bash
+    - name: Clone repo
+      git:
+        repo: git@github.com:raphaklaus/copa-proxy.git
+        dest: ~/app
+        version: main
+        accept_hostkey: yes
+    - name: Copy .env file
+      copy:
+        src: .env.config.cjs
+        dest: ~/app
+    - name: Install app dependencies
+      shell: |  
+        bash -ilc "npm install"
+      args:
+        executable: /bin/bash
+        chdir: app/
+    - name: Run application
+      shell: |  
+        bash -ilc "pm2 start .env.config.cjs"
+      args:
+        executable: /bin/bash
+        chdir: app/
