@@ -30,7 +30,7 @@
        executable: /bin/bash
     - name: Clone repo
       git:
-        repo: git@github.com:raphaklaus/copa-proxy.git
+        repo: https://github.com/raphaklaus/copa-proxy
         dest: ~/app
         version: main
         accept_hostkey: yes
